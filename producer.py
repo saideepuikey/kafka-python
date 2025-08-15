@@ -22,6 +22,11 @@ if __name__ == "__main__":
     a = Admin(bootstrap_server)
     a.create_topic(topic)
 
+    # Create topic for AVRO schema
+    avro_schema_topic = "avro-schema-topic"
+    a = Admin(bootstrap_server)
+    a.create_topic(avro_schema_topic)
+
     p = ProducerClass(bootstrap_server, topic)
     
     try:
