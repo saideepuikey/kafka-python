@@ -21,7 +21,7 @@ class AvroSchemaRegisterClient:
             try:
                 schema = Schema(self.schema_str, self.schema_type)
                 self.schema_reg_client.register_schema(self.subject, schema)
-                print("Schema register successful!")
+                print("Schema registered successfully!")
             except SchemaRegistryError as e:
                 print(e)
 

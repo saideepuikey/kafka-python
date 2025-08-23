@@ -33,7 +33,7 @@ class JSONProducerClass(ProducerClass):
     def __init__(self, bootstrap_server, topic, schema):
         super().__init__(bootstrap_server, topic)
         self.schema = schema
-        self.value_serializer = lambda v: json.dumps(v)
+        self.value_serializer = lambda v: json.dumps(v).encode('utf-8')
 
     def send_message(self, message):
         try:
