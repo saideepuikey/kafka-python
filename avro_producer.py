@@ -38,18 +38,25 @@ class AvroProducerClass(ProducerClass):
 
 if __name__ == "__main__":
     bootstrap_server = "localhost:19092"
-    topic = "avro-msg-topic"
-    a = Admin(bootstrap_server)
-    a.create_topic(topic)
-
+    topic = "avro-schema-topic"
     schema_url = "http://0.0.0.0:18081"
     schema_type = "AVRO"
-    with open("schema.avsc") as avro_schema:
-        schema_str = avro_schema.read()
-
+    
+    # Create topic
+    a = Admin(bootstrap_server)
+    a.create_topic(topic)
+    
     # Register the schema
-    avro_schema_client = AvroSchemaRegisterClient(schema_url, topic, schema_str, schema_type)
+    with open("schema.avsc") as avro_schema:
+        avro_schema_str = avro_schema.read()
 
+    avro_schema_client = AvroSchemaRegisterClient(schema_url, topic, avro_schema_str, schema_type)
+    avro_schema_client.register_schema()
+
+    # Get schema from the Schema Registry
+    schema_str = avro_schema_client.get_schema_str()
+
+    # Produce the message
     p = AvroProducerClass(bootstrap_server, topic, avro_schema_client.schema_reg_client, schema_str)
     
     try:

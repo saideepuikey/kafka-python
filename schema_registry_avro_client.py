@@ -9,25 +9,38 @@ class AvroSchemaRegisterClient:
         self.schema_type = schema_type
         self.schema_reg_client = SchemaRegistryClient({"url" : self.schema_url})
 
-    def check_schema_exists(self):
+    # def schema_exist_in_registry(self):
+    def get_schema_version(self):
         try:
-            self.schema_reg_client.get_latest_version(self.subject)
-            return True
-        except:
-            return False
+            schema_version = self.schema_reg_client.get_latest_version(self.subject)
+            return schema_version.schema_id
+        except SchemaRegistryError as e:
+            print(e)
+
+    def get_schema_str(self):
+        try:
+            # schema_id = self.schema_exist_in_registry()
+            schema_id = self.get_schema_version()
+            schema = self.schema_reg_client.get_schema(schema_id)
+            return schema.schema_str
+        except SchemaRegistryError as e:
+            print(e)
 
     def register_schema(self):
-        if not self.check_schema_exists():
+        # if not self.schema_exist_in_registry():
+        if not self.get_schema_version():
             try:
                 schema = Schema(self.schema_str, self.schema_type)
                 self.schema_reg_client.register_schema(self.subject, schema)
                 print("Schema registered successfully!")
             except SchemaRegistryError as e:
                 print(e)
+        else:
+            print("Schema already registered!")
 
 if __name__ == "__main__":
     schema_url = "http://0.0.0.0:18081"
-    subject = "avro-msg-topic"
+    subject = "avro-schema-topic"
     schema_type = "AVRO"
 
     with open("schema.avsc") as avro_schema:
