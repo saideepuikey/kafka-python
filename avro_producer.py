@@ -2,7 +2,8 @@ from admin import Admin
 from producer import ProducerClass
 from schema_registry_avro_client import AvroSchemaRegisterClient
 from confluent_kafka.schema_registry.avro import AvroSerializer
-from confluent_kafka.serialization import SerializationContext, MessageField
+from confluent_kafka.serialization import SerializationContext, MessageField, StringSerializer
+from uuid import uuid4
 
 class User:
     def __init__(self, first_name, last_name, age):
@@ -23,12 +24,16 @@ class AvroProducerClass(ProducerClass):
         self.schema_registry_client = schema_registry_client
         self.schema_str = schema_str
         self.value_serializer = AvroSerializer(schema_registry_client, schema_str)
+        self.key_serializer = StringSerializer('utf-8')
 
     def send_message(self, message):
         try:
             #validate the schema
             avro_byte_message = self.value_serializer(message, SerializationContext(self.topic, MessageField.VALUE))
-            self.producer.produce(self.topic, avro_byte_message)
+            self.producer.produce(topic=self.topic,
+                                  key=self.key_serializer(str(uuid4())),
+                                  value=avro_byte_message,
+                                  headers={"correlation_id": str(uuid4())})
             print(f"Message sent: {avro_byte_message}")
         except Exception as e:
             print(e)
