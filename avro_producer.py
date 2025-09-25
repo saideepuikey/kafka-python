@@ -18,6 +18,12 @@ def user_to_dict(user):
             age = user.age
     )
 
+def delivery_report(err, msg):
+    if err is not None:
+        print(f"Failed to deliver msg {msg.key()}")
+        return
+    print(f"Successfully delivered msg- {msg.key()}, topic: {msg.topic()}, partition: {msg.partition()}, offset: {msg.offset()}")
+
 class AvroProducerClass(ProducerClass):
     def __init__(self, bootstrap_server, topic, schema_registry_client, schema_str):
         super().__init__(bootstrap_server, topic)
@@ -33,7 +39,8 @@ class AvroProducerClass(ProducerClass):
             self.producer.produce(topic=self.topic,
                                   key=self.key_serializer(str(uuid4())),
                                   value=avro_byte_message,
-                                  headers={"correlation_id": str(uuid4())})
+                                  headers={"correlation_id": str(uuid4())},
+                                  on_delivery=delivery_report)
             print(f"Message sent: {avro_byte_message}")
         except Exception as e:
             print(e)
@@ -71,6 +78,7 @@ if __name__ == "__main__":
             age = int(input("Enter your first age: "))
             user = User(first_name, last_name, age)
             p.send_message(user_to_dict(user))
+            break
     except KeyboardInterrupt as e:
         pass
 
